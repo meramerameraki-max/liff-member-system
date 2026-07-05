@@ -38,15 +38,17 @@ window.onload = async function () {
 
     log("BEFORE FETCH");
 
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({
-        action: "GET_PROFILE",
-        userId: profile.userId,
-        name: profile.displayName
-      })
-    });
+    fetch(API_URL, {
+  method: "POST",
+  headers: {
+    "Content-Type": "text/plain"
+  },
+  body: JSON.stringify({
+    action: "GET_PROFILE",
+    userId: profile.userId,
+    name: profile.displayName
+  })
+});
 
     log("STATUS: " + res.status);
 
