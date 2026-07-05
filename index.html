@@ -1,96 +1,24 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LIFF Production</title>
-</head>
+try {
 
-<body>
+  log("BEFORE FETCH");
 
-<h3>LIFF SYSTEM</h3>
-<div id="debug">INIT</div>
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      action: "GET_PROFILE",
+      userId: profile.userId,
+      name: profile.displayName
+    })
+  });
 
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  log("STATUS: " + res.status);
 
-<script>
+  const data = await res.json();
 
-const LIFF_ID = "2010580391-Mhg030Xz";
-const API_URL = "https://script.google.com/macros/s/AKfycbzSX5CoM6tZmt2dMvMExyOxHniQdYLAZo6TfiTIWzatk3lycrTOCjz4RbULnLV-xEhz-g/exec";
+  log("SUCCESS: " + JSON.stringify(data));
 
-function log(msg){
-  document.getElementById("debug").innerText = msg;
-  console.log(msg);
+} catch (err) {
+  log("FETCH ERROR: " + err.toString());
+  console.error(err);
 }
-
-/* ================= INIT ================= */
-
-async function init(){
-
-  try {
-
-    log("INIT START");
-
-    await liff.init({ liffId: LIFF_ID });
-
-    log("LIFF READY");
-
-    console.log("isInClient:", liff.isInClient());
-    console.log("isLoggedIn:", liff.isLoggedIn());
-
-    if (!liff.isInClient()) {
-      log("OPEN IN LINE ONLY");
-      return;
-    }
-
-    if (!liff.isLoggedIn()) {
-      liff.login();
-      return;
-    }
-
-    /* ================= PROFILE ================= */
-
-    const profile = await liff.getProfile();
-
-    log("USER: " + profile.displayName);
-
-    console.log("PROFILE:", profile);
-
-    /* ================= CALL API ================= */
-
-    log("BEFORE FETCH");
-
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        action: "GET_PROFILE",
-        userId: profile.userId,
-        name: profile.displayName
-      })
-    });
-
-    const data = await res.json();
-
-    log("AFTER FETCH");
-    console.log("API RESULT:", data);
-
-    log("DONE: " + JSON.stringify(data));
-
-  } catch (err) {
-
-    log("ERROR: " + err.toString());
-    console.error(err);
-
-  }
-}
-
-/* ================= START ================= */
-
-window.onload = init;
-
-</script>
-
-</body>
-</html>
