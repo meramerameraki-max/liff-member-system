@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LIFF Member</title>
+</head>
+
+<body>
+
+<h3>LIFF SYSTEM</h3>
+
+<div id="debug">INIT</div>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+<script>
+
+const LIFF_ID = "2010580391-Mhg030Xz";
+const API_URL = "YOUR_APPS_SCRIPT_URL";
+
+function log(msg){
+  document.getElementById("debug").innerText = msg;
+  console.log(msg);
+}
+
+async function init(){
+
+  log("INIT START");
+
+  await liff.init({ liffId: LIFF_ID });
+
+  log("LIFF READY");
+
+  if(!liff.isLoggedIn()){
+    liff.login();
+    return;
+  }
+
+  const profile = await liff.getProfile();
+
+  log("USER: " + profile.displayName);
+
+  await fetch(API_URL,{
+    method:"POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      action:"GET_PROFILE",
+      userId: profile.userId,
+      name: profile.displayName
+    })
+  });
+
+}
+
+window.onload = init;
+
+</script>
+
+</body>
+</html>
