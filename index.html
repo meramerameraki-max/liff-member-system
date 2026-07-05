@@ -39,7 +39,9 @@ async function init(){
   const profile = await liff.getProfile();
 
   log("USER: " + profile.displayName);
-
+  
+  log("BEFORE FETCH");
+  
   await fetch(API_URL,{
     method:"POST",
     headers: {"Content-Type":"application/json"},
@@ -49,7 +51,10 @@ async function init(){
       name: profile.displayName
     })
   });
+const data = await res.json();
 
+log("AFTER FETCH");
+log(JSON.stringify(data));
 }
 
 window.onload = init;
