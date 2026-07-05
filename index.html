@@ -1,24 +1,52 @@
-try {
+<script>
+const LIFF_ID = "2010580391-Mhg030Xz";
+const API_URL = "https://script.google.com/macros/s/AKfycbzSX5CoM6tZmt2dMvMExyOxHniQdYLAZo6TfiTIWzatk3lycrTOCjz4RbULnLV-xEhz-g/exec";
 
-  log("BEFORE FETCH");
-
-  const res = await fetch(API_URL, {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      action: "GET_PROFILE",
-      userId: profile.userId,
-      name: profile.displayName
-    })
-  });
-
-  log("STATUS: " + res.status);
-
-  const data = await res.json();
-
-  log("SUCCESS: " + JSON.stringify(data));
-
-} catch (err) {
-  log("FETCH ERROR: " + err.toString());
-  console.error(err);
+function log(msg){
+  console.log(msg);
 }
+
+async function init(){
+
+  try {
+
+    log("INIT START");
+
+    await liff.init({ liffId: LIFF_ID });
+
+    log("LIFF READY");
+
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return;
+    }
+
+    const profile = await liff.getProfile();
+
+    log("USER: " + profile.userId);
+
+    log("BEFORE FETCH");
+
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        action: "GET_PROFILE",
+        userId: profile.userId,
+        name: profile.displayName
+      })
+    });
+
+    log("STATUS: " + res.status);
+
+    const data = await res.json();
+
+    log("SUCCESS: " + JSON.stringify(data));
+
+  } catch (err) {
+    log("ERROR: " + err.toString());
+  }
+}
+
+window.onload = init;
+</script>
