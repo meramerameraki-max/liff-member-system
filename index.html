@@ -1,12 +1,23 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h3>LIFF SYSTEM</h3>
+<div id="log">START</div>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
 <script>
+
 const LIFF_ID = "2010580391-Mhg030Xz";
 const API_URL = "https://script.google.com/macros/s/AKfycbzSX5CoM6tZmt2dMvMExyOxHniQdYLAZo6TfiTIWzatk3lycrTOCjz4RbULnLV-xEhz-g/exec";
 
 function log(msg){
+  document.getElementById("log").innerText = msg;
   console.log(msg);
 }
 
-async function init(){
+window.onload = async function () {
 
   try {
 
@@ -23,7 +34,7 @@ async function init(){
 
     const profile = await liff.getProfile();
 
-    log("USER: " + profile.userId);
+    log("USER OK");
 
     log("BEFORE FETCH");
 
@@ -41,12 +52,14 @@ async function init(){
 
     const data = await res.json();
 
-    log("SUCCESS: " + JSON.stringify(data));
+    log("DONE: " + JSON.stringify(data));
 
   } catch (err) {
     log("ERROR: " + err.toString());
   }
-}
+};
 
-window.onload = init;
 </script>
+
+</body>
+</html>
