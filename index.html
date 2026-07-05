@@ -2,13 +2,12 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LIFF Member</title>
+<title>LIFF Production</title>
 </head>
 
 <body>
 
 <h3>LIFF SYSTEM</h3>
-
 <div id="debug">INIT</div>
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -23,39 +22,71 @@ function log(msg){
   console.log(msg);
 }
 
+/* ================= INIT ================= */
+
 async function init(){
 
-  log("INIT START");
+  try {
 
-  await liff.init({ liffId: LIFF_ID });
+    log("INIT START");
 
-  log("LIFF READY");
+    await liff.init({ liffId: LIFF_ID });
 
-  if(!liff.isLoggedIn()){
-    liff.login();
-    return;
+    log("LIFF READY");
+
+    console.log("isInClient:", liff.isInClient());
+    console.log("isLoggedIn:", liff.isLoggedIn());
+
+    if (!liff.isInClient()) {
+      log("OPEN IN LINE ONLY");
+      return;
+    }
+
+    if (!liff.isLoggedIn()) {
+      liff.login();
+      return;
+    }
+
+    /* ================= PROFILE ================= */
+
+    const profile = await liff.getProfile();
+
+    log("USER: " + profile.displayName);
+
+    console.log("PROFILE:", profile);
+
+    /* ================= CALL API ================= */
+
+    log("BEFORE FETCH");
+
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        action: "GET_PROFILE",
+        userId: profile.userId,
+        name: profile.displayName
+      })
+    });
+
+    const data = await res.json();
+
+    log("AFTER FETCH");
+    console.log("API RESULT:", data);
+
+    log("DONE: " + JSON.stringify(data));
+
+  } catch (err) {
+
+    log("ERROR: " + err.toString());
+    console.error(err);
+
   }
-
-  const profile = await liff.getProfile();
-
-  log("USER: " + profile.displayName);
-  
-  log("BEFORE FETCH");
-  
-  await fetch(API_URL,{
-    method:"POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      action:"GET_PROFILE",
-      userId: profile.userId,
-      name: profile.displayName
-    })
-  });
-const data = await res.json();
-
-log("AFTER FETCH");
-log(JSON.stringify(data));
 }
+
+/* ================= START ================= */
 
 window.onload = init;
 
