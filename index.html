@@ -1,62 +1,287 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MeraMera สะสมแต้ม</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+  :root{
+    --orange-1:#F7941D; --orange-2:#F2C14E; --orange-dark:#E8830B;
+    --gray-bg:#F7F7F8; --card-bg:#FFFFFF; --text-dark:#2B2B2B;
+    --text-gray:#8A8A8E; --border:#EFEFF1; --green:#2FAE60; --red:#E4483C;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ font-family:'Noto Sans Thai',sans-serif; background:var(--gray-bg); min-height:100vh; }
+  .wrap{max-width:480px; margin:0 auto; min-height:100vh; background:var(--gray-bg); position:relative;}
+  .header{ background:linear-gradient(135deg,var(--orange-2) 0%, var(--orange-1) 100%); padding:22px 22px 30px; }
+  .header-title{ display:flex; align-items:center; gap:8px; font-size:20px; font-weight:800; color:#fff; }
+  .header-sub{ font-size:13px; color:rgba(255,255,255,.92); margin-top:4px; font-weight:500; }
+  .content{padding:0 20px 40px;}
+  .points-card{ background:#fff; border-radius:18px; padding:22px 20px; box-shadow:0 8px 24px rgba(0,0,0,.08); margin-top:-20px; text-align:center; position:relative; z-index:2; }
+  .points-card .label{font-size:13px; color:var(--text-gray); font-weight:600;}
+  .points-value{ font-size:40px; font-weight:800; color:var(--orange-1); line-height:1.1; margin:4px 0 2px; }
+  .points-unit{font-size:13px; font-weight:700; color:var(--orange-dark);}
+  .points-hint{ font-size:11.5px; color:var(--text-gray); margin-top:10px; border-top:1px dashed var(--border); padding-top:10px; }
+  .member-name{font-size:12px; color:var(--text-gray); margin-top:2px;}
+  .card{ background:var(--card-bg); border-radius:18px; padding:20px; box-shadow:0 4px 18px rgba(0,0,0,.05); margin-top:16px; }
+  .card-title{ display:flex; align-items:center; gap:8px; font-size:15px; font-weight:700; color:var(--text-dark); margin-bottom:16px; }
+  .card-title .icon-badge{ width:22px;height:22px;border-radius:8px; background:var(--orange-2); display:flex;align-items:center;justify-content:center; color:#fff; font-size:12px; }
+  .field{ display:flex; align-items:center; gap:10px; border:1.5px solid var(--border); border-radius:14px; padding:13px 16px; margin-bottom:12px; background:#fff; }
+  .field .fi{color:var(--orange-1); font-size:15px; width:18px; text-align:center;}
+  .field input, .field select{ border:none; outline:none; flex:1; font-family:inherit; font-size:14px; color:var(--text-dark); background:transparent; appearance:none; }
+  .field input::placeholder{color:#B9B9BE;}
+  .field .chev{color:#B9B9BE; font-size:12px;}
+  .field-note{font-size:11px; color:var(--text-gray); margin:-8px 0 12px 4px;}
+  .btn-submit{ width:100%; background:linear-gradient(135deg,var(--orange-1),var(--orange-dark)); color:#fff; border:none; border-radius:14px; padding:15px; font-size:15px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; font-family:inherit; margin-top:4px; }
+  .btn-submit:disabled{opacity:.6; cursor:not-allowed;}
+  .status-msg{ margin-top:12px; font-size:13px; font-weight:600; text-align:center; display:none; padding:10px; border-radius:10px; }
+  .status-msg.show{display:block;}
+  .status-msg.success{background:#EAF9EF; color:var(--green);}
+  .status-msg.error{background:#FDEDEC; color:var(--red);}
+  .status-msg.loading{background:#FFF6E8; color:var(--orange-dark);}
+  .empty-state{text-align:center; padding:16px 0 6px;}
+  .empty-icon{ width:64px;height:64px;border-radius:50%; background:#FDEFDD; display:flex;align-items:center;justify-content:center; margin:0 auto 12px; color:var(--orange-1); font-size:24px; }
+  .empty-title{font-size:13.5px; font-weight:700; color:var(--text-dark); margin-bottom:4px;}
+  .empty-sub{font-size:12px; color:var(--text-gray);}
+  .history-item{ display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border); }
+  .history-item:last-child{border-bottom:none;}
+  .hi-left .hi-order{font-size:13px; font-weight:700; color:var(--text-dark);}
+  .hi-left .hi-meta{font-size:11.5px; color:var(--text-gray); margin-top:2px;}
+  .hi-point{font-size:13px; font-weight:800; color:var(--green);}
+  #liffLoading{ position:fixed; inset:0; background:var(--gray-bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; z-index:999; }
+  .spinner{ width:34px; height:34px; border-radius:50%; border:3px solid var(--border); border-top-color:var(--orange-1); animation:spin 0.8s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  #liffLoading p{font-size:13px; color:var(--text-gray); font-weight:600;}
+  #liffError{ position:fixed; inset:0; background:var(--gray-bg); display:none; flex-direction:column; align-items:center; justify-content:center; gap:10px; z-index:999; padding:30px; text-align:center; }
+  #liffError p{font-size:13px; color:var(--text-gray);}
+</style>
+</head>
 <body>
 
-<h3>LIFF SYSTEM</h3>
-<div id="log">START</div>
+<div id="liffLoading">
+  <div class="spinner"></div>
+  <p id="loadingStatus">กำลังเริ่มต้น...</p>
+</div>
 
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<div id="liffError">
+  <div class="empty-icon">⚠️</div>
+  <p><strong>ไม่สามารถโหลดข้อมูลสมาชิกได้</strong></p>
+  <p id="errorDetail" style="font-size:11px; word-break:break-all; margin-top:8px;"></p>
+</div>
+
+<div class="wrap">
+  <div class="header">
+    <div class="header-title">🍋 MeraMera สะสมแต้ม</div>
+    <div class="header-sub">แจ้งเลขออเดอร์ • รับแต้มทันที • ลุ้นรางวัลทุกเดือน</div>
+  </div>
+
+  <div class="content">
+    <div class="points-card">
+      <div class="label">แต้มสะสมของคุณ</div>
+      <div class="points-value" id="pointsValue">-</div>
+      <div class="points-unit">Mera Point</div>
+      <div class="member-name" id="memberName"></div>
+      <div class="points-hint">ยิ่งแจ้งออเดอร์ ยิ่งได้แต้ม ยิ่งมีสิทธิ์ลุ้นรางวัล!</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon-badge">🧾</span> แจ้งออเดอร์เพื่อรับแต้ม</div>
+      <div class="field">
+        <span class="fi">🏬</span>
+        <select id="channel">
+          <option value="">เลือกช่องทางที่สั่งซื้อ</option>
+          <option value="Shopee">Shopee</option>
+          <option value="Facebook">Facebook</option>
+          <option value="LINE OA">LINE OA</option>
+        </select>
+        <span class="chev">▾</span>
+      </div>
+      <div class="field">
+        <span class="fi">🏷️</span>
+        <input type="text" id="orderNo" placeholder="เลขที่ออเดอร์ (Order No)">
+      </div>
+      <div class="field-note">คัดลอกเลขออเดอร์จากใบยืนยันการสั่งซื้อของแต่ละช่องทาง</div>
+      <div class="field">
+        <span class="fi">📦</span>
+        <input type="number" id="quantity" placeholder="จำนวนสินค้า (Quantity)" value="1" min="1">
+      </div>
+      <button class="btn-submit" id="submitBtn" onclick="submitOrder()">➤ ส่งข้อมูลรับแต้ม</button>
+      <div class="status-msg" id="statusMsg"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">☰ ประวัติการแจ้งออเดอร์ล่าสุด</div>
+      <div id="historyList">
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <div class="empty-title">ยังไม่มีประวัติการแจ้งออเดอร์</div>
+          <div class="empty-sub">เมื่อคุณแจ้งออเดอร์ รายการจะแสดงที่นี่</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
-const LIFF_ID = "2010580391-Mhg030Xz";
-const API_URL = "https://script.google.com/macros/s/AKfycbzSX5CoM6tZmt2dMvMExyOxHniQdYLAZo6TfiTIWzatk3lycrTOCjz4RbULnLV-xEhz-g/exec";
+// ⚠️ ต้องแก้ 2 ค่านี้ให้ตรงกับของจริงของคุณ
+const LIFF_ID = '2010580391-Mhg030Xz';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx-61nwQb63Rse1jtvdTFz_gYoUYLxJ0gfzJkubGz4zicMtqT18HFvq8DSoK7lfbkh1jw/exec';
 
-function log(msg){
-  document.getElementById("log").innerText = msg;
-  console.log(msg);
+let currentUserId = '';
+let currentDisplayName = '';
+
+function updateStatus(text){
+  const el = document.getElementById('loadingStatus');
+  if (el) el.innerText = text;
+  console.log('[STATUS]', text);
+}
+function showError(detail){
+  document.getElementById('liffLoading').style.display = 'none';
+  document.getElementById('liffError').style.display = 'flex';
+  document.getElementById('errorDetail').innerText = detail || '';
 }
 
-window.onload = async function () {
+const stuckTimer = setTimeout(function(){
+  showError('หมดเวลารอ (timeout) — สถานะล่าสุดคือ: ' + (document.getElementById('loadingStatus').innerText || '-'));
+}, 12000);
+
+// ป้องกัน race condition กรณี SDK ยังโหลดไม่เสร็จตอนเรียก liff.init()
+function waitForLiffReady(){
+  return new Promise(function(resolve){
+    const check = setInterval(function(){
+      if (typeof liff !== 'undefined') {
+        clearInterval(check);
+        resolve();
+      }
+    }, 50);
+  });
+}
+
+async function init(){
+  updateStatus('กำลังเชื่อมต่อ LIFF...');
+  await waitForLiffReady();
+
   try {
-    log("INIT START");
-
-    // เริ่ม LIFF
     await liff.init({ liffId: LIFF_ID });
-    log("LIFF READY");
 
-    // ถ้ายังไม่ login ให้ redirect
+    updateStatus('เช็คสถานะ login...');
     if (!liff.isLoggedIn()) {
-      liff.login();
-      return;
+      updateStatus('กำลังพาไป login...');
+      liff.login({ redirectUri: window.location.href });
+      return; // กำลัง redirect ออกไป
     }
 
+    updateStatus('ดึงข้อมูลโปรไฟล์...');
     const profile = await liff.getProfile();
-    log("USER OK: " + profile.displayName);
+    currentUserId = profile.userId;
+    currentDisplayName = profile.displayName || '';
+    document.getElementById('memberName').innerText = currentDisplayName;
 
-    // ส่ง request ไป GAS
-    log("BEFORE FETCH");
+    updateStatus('โหลดแต้มสะสมจากชีต...');
+    await loadProfile();
 
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        action: "GET_PROFILE",
-        userId: profile.userId,
-        name: profile.displayName
-      })
-    });
-
-    log("STATUS: " + res.status);
-
-    const data = await res.json();
-    log("DONE: " + JSON.stringify(data));
-
+    clearTimeout(stuckTimer);
+    document.getElementById('liffLoading').style.display = 'none';
   } catch (err) {
-    log("ERROR: " + err.toString());
+    clearTimeout(stuckTimer);
+    console.error('init error', err);
+    showError((err && err.message) || String(err));
   }
-};
+}
+
+/**
+ * สำคัญมาก: ห้ามใส่ headers: {'Content-Type': 'application/json'}
+ * เพราะจะทำให้ browser ยิง CORS preflight (OPTIONS) ไปก่อน ซึ่ง Apps Script
+ * ไม่มี doOptions รองรับ ทำให้ request ถูกบล็อกเงียบ ๆ โดยไม่มี error ชัดเจน
+ * ปล่อยให้ Content-Type เป็นค่า default (text/plain) จะกลายเป็น "simple request"
+ * ไม่ต้องผ่าน preflight — Apps Script อ่าน e.postData.contents ได้ปกติอยู่แล้ว
+ */
+async function callApi(payload){
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error || 'เกิดข้อผิดพลาด');
+  return data;
+}
+
+async function loadProfile(){
+  const data = await callApi({ action: 'GET_PROFILE', userId: currentUserId, name: currentDisplayName });
+  document.getElementById('pointsValue').innerText = data.points;
+  renderHistory(data.history);
+}
+
+async function submitOrder(){
+  const channel = document.getElementById('channel').value;
+  const orderNo = document.getElementById('orderNo').value.trim();
+  const qty = document.getElementById('quantity').value;
+  const btn = document.getElementById('submitBtn');
+
+  if (!currentUserId) { showStatus('error', 'ไม่พบข้อมูลสมาชิก กรุณาเปิดผ่านแอป LINE อีกครั้ง'); return; }
+  if (!channel || !orderNo || !qty) { showStatus('error', 'กรุณากรอกข้อมูลให้ครบถ้วน'); return; }
+
+  showStatus('loading', 'กำลังบันทึกข้อมูล...');
+  btn.disabled = true;
+
+  try {
+    const data = await callApi({
+      action: 'SUBMIT_ORDER', userId: currentUserId, name: currentDisplayName,
+      channel: channel, orderNo: orderNo, qty: qty
+    });
+    showStatus('success', 'บันทึกสำเร็จ ได้รับ ' + data.pointsEarned + ' แต้ม');
+    document.getElementById('pointsValue').innerText = data.totalPoints;
+    document.getElementById('orderNo').value = '';
+    document.getElementById('channel').value = '';
+    document.getElementById('quantity').value = '1';
+    renderHistory(data.history);
+  } catch (err) {
+    showStatus('error', err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function showStatus(type, text){
+  const msg = document.getElementById('statusMsg');
+  msg.className = 'status-msg show ' + type;
+  msg.innerText = text;
+}
+
+function renderHistory(history){
+  const container = document.getElementById('historyList');
+  if (!history || history.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-title">ยังไม่มีประวัติการแจ้งออเดอร์</div>
+        <div class="empty-sub">เมื่อคุณแจ้งออเดอร์ รายการจะแสดงที่นี่</div>
+      </div>`;
+    return;
+  }
+  container.innerHTML = history.map(function(item){
+    const d = new Date(item.timestamp);
+    const dateStr = isNaN(d) ? '' : (d.getDate() + '/' + (d.getMonth()+1) + '/' + (d.getFullYear()+543));
+    return `
+      <div class="history-item">
+        <div class="hi-left">
+          <div class="hi-order">${escapeHtml(item.channel)} • ${escapeHtml(String(item.orderNo))}</div>
+          <div class="hi-meta">${dateStr} • จำนวน ${item.quantity} ชิ้น</div>
+        </div>
+        <div class="hi-point">+${item.pointsEarned}</div>
+      </div>`;
+  }).join('');
+}
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, function(c){
+    return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+  });
+}
+
+init();
 </script>
 
 </body>
