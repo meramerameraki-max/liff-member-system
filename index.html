@@ -152,7 +152,7 @@ function showError(detail){
 
 const stuckTimer = setTimeout(function(){
   showError('หมดเวลารอ (timeout) — สถานะล่าสุดคือ: ' + (document.getElementById('loadingStatus').innerText || '-'));
-}, 12000);
+}, 22000);
 
 // ป้องกัน race condition กรณี SDK ยังโหลดไม่เสร็จตอนเรียก liff.init()
 function waitForLiffReady(){
