@@ -128,7 +128,8 @@
 <script>
 // ⚠️ ต้องแก้ 2 ค่านี้ให้ตรงกับของจริงของคุณ
 const LIFF_ID = '2010580391-Mhg030Xz';
-const API_URL = 'https://script.google.com/macros/s/AKfycbzSX5CoM6tZmt2dMvMExyOxHniQdYLAZo6TfiTIWzatk3lycrTOCjz4RbULnLV-xEhz-g/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx-61nwQb63Rse1jtvdTFz_gYoUYLxJ0gfzJkubGz4zicMtqT18HFvq8DSoK7lfbkh1jw/exec';
+
 
 let currentUserId = '';
 let currentDisplayName = '';
@@ -207,7 +208,7 @@ async function init(){
     currentDisplayName = profile.displayName || '';
     document.getElementById('memberName').innerText = currentDisplayName;
 
-    updateStatus('โหลดแต้มสะสมจากชีต...');
+    updateStatus('โหลดแต้มสะสม...');
     await loadProfile();
 
     clearTimeout(stuckTimer);
