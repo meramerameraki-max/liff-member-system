@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>meramera.member สะสมแต้ม</title>
+<title>MeraMera สะสมแต้ม</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
@@ -74,7 +74,7 @@
 <div class="wrap">
   <div class="header">
     <div class="header-title">🍋 Meramera สะสมแต้ม</div>
-    <div class="header-sub">แจ้งเลขออเดอร์ • รับแต้มทันที</div>
+    <div class="header-sub">แจ้งเลขออเดอร์ • รับแต้มทันที • ลุ้นรับรางวัล</div>
   </div>
 
   <div class="content">
@@ -90,19 +90,20 @@
       <div class="card-title"><span class="icon-badge">🧾</span> แจ้งออเดอร์เพื่อรับแต้ม</div>
       <div class="field">
         <span class="fi">🏬</span>
-        <select id="channel">
+        <select id="channel" onchange="updatePrefix()">
           <option value="">เลือกช่องทางที่สั่งซื้อ</option>
           <option value="Shopee">Shopee</option>
           <option value="Facebook">Facebook</option>
-          <option value="LINE">LINE OA</option>
+          <option value="LINE OA">LINE OA</option>
         </select>
         <span class="chev">▾</span>
       </div>
-      <div class="field">
+      <div class="field" id="orderNoField">
         <span class="fi">🏷️</span>
-        <input type="text" id="orderNo" placeholder="เลขที่ออเดอร์ (Order No)">
+        <span id="orderPrefix" style="font-weight:700; color:var(--text-gray); white-space:nowrap;">เลือกช่องทางก่อน</span>
+        <input type="text" id="orderNo" placeholder="กรอกเฉพาะตัวเลข" inputmode="numeric" disabled>
       </div>
-      <div class="field-note">คัดลอกเลขออเดอร์จากใบยืนยันการสั่งซื้อของแต่ละช่องทาง</div>
+      <div class="field-note">กรอกเฉพาะตัวเลขท้ายเลขออเดอร์ ระบบเติมรหัสช่องทางให้อัตโนมัติ</div>
       <div class="field">
         <span class="fi">📦</span>
         <input type="number" id="quantity" placeholder="จำนวนสินค้า (Quantity)" value="1" min="1">
@@ -127,7 +128,7 @@
 <script>
 // ⚠️ ต้องแก้ 2 ค่านี้ให้ตรงกับของจริงของคุณ
 const LIFF_ID = '2010580391-Mhg030Xz';
-const API_URL = 'https://script.google.com/macros/s/AKfycbx-61nwQb63Rse1jtvdTFz_gYoUYLxJ0gfzJkubGz4zicMtqT18HFvq8DSoK7lfbkh1jw/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzSX5CoM6tZmt2dMvMExyOxHniQdYLAZo6TfiTIWzatk3lycrTOCjz4RbULnLV-xEhz-g/exec';
 
 let currentUserId = '';
 let currentDisplayName = '';
@@ -138,7 +139,27 @@ const CHANNEL_PREFIX = {
   'LINE OA': 'LN',
   'Facebook': 'FB'
 };
-  
+
+function updatePrefix(){
+  const channel = document.getElementById('channel').value;
+  const prefixEl = document.getElementById('orderPrefix');
+  const input = document.getElementById('orderNo');
+
+  if (!channel) {
+    prefixEl.innerText = 'เลือกช่องทางก่อน';
+    prefixEl.style.color = 'var(--text-gray)';
+    input.disabled = true;
+    input.value = '';
+    return;
+  }
+
+  const prefix = CHANNEL_PREFIX[channel] || '';
+  prefixEl.innerText = prefix + '-';
+  prefixEl.style.color = 'var(--orange-1)';
+  input.disabled = false;
+  input.focus();
+}
+
 function updateStatus(text){
   const el = document.getElementById('loadingStatus');
   if (el) el.innerText = text;
@@ -152,7 +173,7 @@ function showError(detail){
 
 const stuckTimer = setTimeout(function(){
   showError('หมดเวลารอ (timeout) — สถานะล่าสุดคือ: ' + (document.getElementById('loadingStatus').innerText || '-'));
-}, 22000);
+}, 12000);
 
 // ป้องกัน race condition กรณี SDK ยังโหลดไม่เสร็จตอนเรียก liff.init()
 function waitForLiffReady(){
@@ -224,12 +245,17 @@ async function loadProfile(){
 
 async function submitOrder(){
   const channel = document.getElementById('channel').value;
-  const orderNo = document.getElementById('orderNo').value.trim();
+  const orderNoRaw = document.getElementById('orderNo').value.trim();
   const qty = document.getElementById('quantity').value;
   const btn = document.getElementById('submitBtn');
 
   if (!currentUserId) { showStatus('error', 'ไม่พบข้อมูลสมาชิก กรุณาเปิดผ่านแอป LINE อีกครั้ง'); return; }
-  if (!channel || !orderNo || !qty) { showStatus('error', 'กรุณากรอกข้อมูลให้ครบถ้วน'); return; }
+  if (!channel) { showStatus('error', 'กรุณาเลือกช่องทางที่สั่งซื้อ'); return; }
+  if (!orderNoRaw || !qty) { showStatus('error', 'กรุณากรอกข้อมูลให้ครบถ้วน'); return; }
+  if (!/^\d+$/.test(orderNoRaw)) { showStatus('error', 'กรอกเฉพาะตัวเลขเท่านั้น'); return; }
+
+  const prefix = CHANNEL_PREFIX[channel] || '';
+  const orderNo = prefix + orderNoRaw; // ★ ประกอบ prefix + เลขที่ลูกค้ากรอก ก่อนส่งไป backend
 
   showStatus('loading', 'กำลังบันทึกข้อมูล...');
   btn.disabled = true;
@@ -243,6 +269,7 @@ async function submitOrder(){
     document.getElementById('pointsValue').innerText = data.totalPoints;
     document.getElementById('orderNo').value = '';
     document.getElementById('channel').value = '';
+    updatePrefix();
     document.getElementById('quantity').value = '1';
     renderHistory(data.history);
   } catch (err) {
