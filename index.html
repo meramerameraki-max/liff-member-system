@@ -94,7 +94,7 @@
           <option value="">เลือกช่องทางที่สั่งซื้อ</option>
           <option value="Shopee">Shopee</option>
           <option value="Facebook">Facebook</option>
-          <option value="LINE OA">LINE OA</option>
+          <option value="LINE">LINE OA</option>
         </select>
         <span class="chev">▾</span>
       </div>
@@ -132,6 +132,13 @@ const API_URL = 'https://script.google.com/macros/s/AKfycbx-61nwQb63Rse1jtvdTFz_
 let currentUserId = '';
 let currentDisplayName = '';
 
+// รหัสช่องทาง -> prefix ที่เติมหน้าเลขออเดอร์อัตโนมัติ
+const CHANNEL_PREFIX = {
+  'Shopee': 'TH',
+  'LINE OA': 'LN',
+  'Facebook': 'FB'
+};
+  
 function updateStatus(text){
   const el = document.getElementById('loadingStatus');
   if (el) el.innerText = text;
